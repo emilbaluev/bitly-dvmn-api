@@ -31,43 +31,33 @@ def is_bitlink(headers, short_link):
     return response.ok
 
 
-def check_bitlink(headers, link):
-    bitlink_check_url = f"https://api-ssl.bitly.com/v4/bitlinks/{link}"
-
-    response = requests.get(bitlink_check_url, headers=headers)
-    return response.ok
-
-
 def main():
     load_dotenv()
-    token = os.getenv("ACCESS_TOKEN")
+    token = os.getenv('ACCESS_TOKEN')
     parser = argparse.ArgumentParser(
         description='Cчитает количество кликов или создает короткую ссылку')
     parser.add_argument('url', help='Ссылка для проверки')
     args = parser.parse_args()
-    headers = {"Authorization": f"Bearer {token}"}
+    headers = {'Authorization': f'Bearer {token}'}
     link = args.url
     short_link = urlparse(link).netloc + urlparse(link).path
 
     try:
         if is_bitlink(headers, short_link):
-            bitlink_exist = check_bitlink(headers, link)
-            if bitlink_exist is False:
-                total_clicks = get_total_clicks(headers, short_link)
-                print(f"По ссылке {link} перешли {total_clicks} раз(а).")
-
+            total_clicks = get_total_clicks(headers, short_link)
+            print(f'По ссылке {link} перешли {total_clicks} раз(а).')
         else:
             bitlink = get_short_link(token, link)
             print(
-                "Теперь для доступа к {} воспользуйтесь ссылкой:\n{}".format(
+                'Теперь для доступа к {} воспользуйтесь ссылкой:\n{}'.format(
                     link, bitlink))
     except requests.ConnectionError:
-        print("Сайт не отвечает.")
+        print('Сайт не отвечает.')
     except KeyError:
         print('Ошибка ввода ссылки')
     except requests.HTTPError:
-        print("Ошибка сервиса Bitly")
+        print('Ошибка сервиса Bitly')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
