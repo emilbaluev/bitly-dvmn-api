@@ -17,15 +17,17 @@ def get_short_link(token, url_link):
     return response.json()['link']
 
 
-def get_total_clicks(headers, base_url, short_link):
+def get_total_clicks(token, short_link):
     click_url = f'https://api-ssl.bitly.com/v4//bitlinks/{short_link}/clicks/summary'
+    headers = {'Authorization': f'Bearer {token}'}
     params = {'unit': 'day', 'units': '-1'}
     click_response = requests.get(click_url, headers=headers, params=params)
     click_response.raise_for_status()
     return click_response.json()['total_clicks']
 
 
-def is_bitlink(headers, short_link):
+def is_bitlink(token, short_link):
+    headers = {'Authorization': f'Bearer {token}'}
     url = f'https://api-ssl.bitly.com/v4/bitlinks/{short_link}'
     response = requests.get(url, headers=headers)
     return response.ok
@@ -38,13 +40,12 @@ def main():
         description='Cчитает количество кликов или создает короткую ссылку')
     parser.add_argument('url', help='Ссылка для проверки')
     args = parser.parse_args()
-    headers = {'Authorization': f'Bearer {token}'}
     link = args.url
-    short_link = urlparse(link).netloc + urlparse(link).path
-
+    link_src = urlparse(link)
+    short_link = '{}{}'.format(link_src.netloc, link_src.path)
     try:
-        if is_bitlink(headers, short_link):
-            total_clicks = get_total_clicks(headers, short_link)
+        if is_bitlink(token, short_link):
+            total_clicks = get_total_clicks(token, short_link)
             print(f'По ссылке {link} перешли {total_clicks} раз(а).')
         else:
             bitlink = get_short_link(token, link)
